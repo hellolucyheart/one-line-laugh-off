@@ -8,12 +8,14 @@ relaxing. No setup, no explanation, just the line.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
 JOKE = "I asked my smart speaker for something relaxing, and it read my bank balance out loud."
 
-DESTINATION = Path("/output/entry.txt")
+DEFAULT_DESTINATION = Path("/output/entry.txt")
+DESTINATION = Path(os.environ.get("MAKEFUN_OUTPUT", str(DEFAULT_DESTINATION)))
 LIMIT = 200
 
 
@@ -26,6 +28,8 @@ def ensure_single_line(text: str) -> str:
         raise SystemExit(f"entry is {len(cleaned)} characters, over the {LIMIT} limit")
     if any(mark in cleaned for mark in ("\n", "\r")):
         raise SystemExit("entry must fit on one line")
+    if any(ord(ch) < 32 for ch in cleaned):
+        raise SystemExit("entry must not hold control characters")
     if cleaned.count(".") != 1 or not cleaned.endswith("."):
         raise SystemExit("entry must be exactly one sentence")
     return cleaned
